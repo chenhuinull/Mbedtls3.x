@@ -59,7 +59,9 @@ if not exist "!CC_EXE!" (
         exit /b 1
     )
     for %%i in ("!CC_EXE!") do set "CC_BIN=%%~dpi"
-    set "MINGW_PATH=!CC_BIN:~0,-1!"
+    set "CC_BIN=!CC_BIN:~0,-1!"
+    for %%i in ("!CC_BIN!") do set "MINGW_PATH=%%~dpi"
+    set "MINGW_PATH=!MINGW_PATH:~0,-1!"
     echo [INFO] Found MinGW at: !MINGW_PATH!
 )
 
@@ -85,7 +87,8 @@ if "!NINJA_EXE!"=="" (
 REM --- Setup PATH ---
 set "PATH=!MINGW_PATH!\bin;!PATH!"
 if not "!NINJA_EXE!"=="" (
-    for %%i in ("!NINJA_EXE!") do set "PATH=%%~dpi;!PATH!"
+    for %%i in ("!NINJA_EXE!") do set "NINJA_BIN=%%~dpi"
+    set "PATH=!NINJA_BIN:~0,-1!;!PATH!"
 )
 
 REM --- Enter project directory ---
@@ -95,20 +98,25 @@ cd /d "!PROJECT_DIR!"
 
 REM --- Parse arguments ---
 set "BUILD_TYPE=Release"
+set "DO_CLEAN=0"
 if /i "%1"=="debug"    set "BUILD_TYPE=Debug"
+if /i "%2"=="debug"    set "BUILD_TYPE=Debug"
 if /i "%1"=="release"  set "BUILD_TYPE=Release"
-if /i "%1"=="clean"    set "BUILD_TYPE=Release"
+if /i "%2"=="release"  set "BUILD_TYPE=Release"
+if /i "%1"=="clean"    (set "DO_CLEAN=1" & set "BUILD_TYPE=Release")
+if /i "%2"=="clean"    (set "DO_CLEAN=1" & set "BUILD_TYPE=Release")
 if /i "%1"=="/ninja"   set "CMAKE_GENERATOR=Ninja"
 if /i "%2"=="/ninja"   set "CMAKE_GENERATOR=Ninja"
 if /i "%1"=="/make"    set "CMAKE_GENERATOR=MinGW Makefiles"
 if /i "%2"=="/make"    set "CMAKE_GENERATOR=MinGW Makefiles"
 
 REM --- Clean ---
-if /i "%1"=="clean" (
+if "!DO_CLEAN!"=="1" (
     echo [CLEAN] Deleting build and out directories...
     if exist "build" rmdir /s /q build
     if exist "out"   rmdir /s /q out
     echo [CLEAN] Done.
+    exit /b 0
 )
 
 REM --- Build info ---
@@ -123,7 +131,8 @@ echo ============================================
 REM --- Configure ---
 echo.
 echo [1/2] Configuring ^(!BUILD_TYPE!^)...
-"!CMAKE_EXE!" -G "!CMAKE_GENERATOR!" -B build -S . -DCMAKE_BUILD_TYPE=!BUILD_TYPE! -DENABLE_TESTING=Off -DENABLE_PROGRAMS=Off -DUSE_SHARED_MBEDTLS_LIBRARY=On -DCMAKE_C_COMPILER="!CC_EXE!"
+set "CC=!CC_EXE!"
+"!CMAKE_EXE!" -G "!CMAKE_GENERATOR!" -B build -S . -DCMAKE_BUILD_TYPE=!BUILD_TYPE! -DENABLE_TESTING=Off -DENABLE_PROGRAMS=Off -DUSE_SHARED_MBEDTLS_LIBRARY=On -DCMAKE_C_FLAGS=-static-libgcc
 if errorlevel 1 (
     echo [ERROR] CMake configure failed ^(code !errorlevel!^)
     pause
