@@ -74,3 +74,6 @@ compile_commands.json
 
 # VScode folder to store local debug files and configurations
 .vscode
+
+# Portable build tools extracted from the self-extracting package
+DevEnv/w64devkit/
