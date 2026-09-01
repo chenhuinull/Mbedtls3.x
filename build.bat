@@ -8,7 +8,7 @@ if "!PROJECT_DIR:~-1!"=="\" set "PROJECT_DIR=!PROJECT_DIR:~0,-1!"
 cd /d "!PROJECT_DIR!"
 title !PROJECT_NAME! Build
 
-REM Usage: build.bat [x86|x64] [debug|release|clean]
+REM Usage: Build.bat [x86|x64] [debug|release|clean]
 REM   x86    Build 32-bit DLL
 REM   x64    Build 64-bit DLL (default)
 REM   clean  Remove build and out directories
@@ -23,15 +23,15 @@ goto parse_args
 :args_done
 
 if "!ARCH!"=="x86" (
-    set "W64DEVKIT_DIR=!PROJECT_DIR!\DevEnv\w64devkit-x86"
-    set "W64DEVKIT_SFX=!PROJECT_DIR!\DevEnv\w64devkit-x86.exe"
+    set "W64DEVKIT_DIR=!PROJECT_DIR!\Toolchain\w64devkit-x86"
+    set "W64DEVKIT_SFX=!PROJECT_DIR!\Toolchain\w64devkit-x86.exe"
     set "BUILD_DIR=build-x86"
-    set "OUTPUT_DIR=!PROJECT_DIR!\out-x86"
+    set "OUTPUT_DIR=!PROJECT_DIR!\Out-x86"
 ) else (
-    set "W64DEVKIT_DIR=!PROJECT_DIR!\DevEnv\w64devkit"
-    set "W64DEVKIT_SFX=!PROJECT_DIR!\DevEnv\w64devkit.exe"
+    set "W64DEVKIT_DIR=!PROJECT_DIR!\Toolchain\w64devkit"
+    set "W64DEVKIT_SFX=!PROJECT_DIR!\Toolchain\w64devkit.exe"
     set "BUILD_DIR=build"
-    set "OUTPUT_DIR=!PROJECT_DIR!\out"
+    set "OUTPUT_DIR=!PROJECT_DIR!\Out"
 )
 
 set "W64DEVKIT_BIN=!W64DEVKIT_DIR!\bin"
@@ -47,7 +47,7 @@ if not exist "!CC_EXE!" (
     echo [INFO] Extracting w64devkit ^(!ARCH!^)...
     REM Extract to a staging dir first: both SFX archives unpack into a folder
     REM named "w64devkit", so a direct extraction would overwrite the other arch.
-    set "SFX_STAGE=!PROJECT_DIR!\DevEnv\_sfx_stage_!ARCH!"
+    set "SFX_STAGE=!PROJECT_DIR!\Toolchain\_sfx_stage_!ARCH!"
     if exist "!SFX_STAGE!" rmdir /s /q "!SFX_STAGE!"
     "!W64DEVKIT_SFX!" -y "-o!SFX_STAGE!" >nul
     if errorlevel 1 (
@@ -142,11 +142,11 @@ pause
 exit /b 0
 
 :clean
-echo [CLEAN] Deleting build and out directories...
+echo [CLEAN] Deleting build and Out directories...
 if exist "build" rmdir /s /q "build"
 if exist "build-x86" rmdir /s /q "build-x86"
-if exist "out" rmdir /s /q "out"
-if exist "out-x86" rmdir /s /q "out-x86"
+if exist "Out" rmdir /s /q "Out"
+if exist "Out-x86" rmdir /s /q "Out-x86"
 echo [CLEAN] Done.
 exit /b 0
 
